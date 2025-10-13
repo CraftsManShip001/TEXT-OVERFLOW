@@ -1,3 +1,5 @@
+"use client";
+
 import { DocsBlock } from "./DocsBlock";
 import { DocsBlock as DocsBlockType } from "@/types/docs";
 
@@ -11,6 +13,19 @@ export function DocsBlockRender({ blocks } : { blocks : DocsBlockType[]} ){
         switch(module){
           case "headline_1":
           case "headline_2":
+            return(
+              <div id={typeof content === 'string' ? content : undefined} key={i}>
+                <DocsBlock module={module}>
+                  {content}
+                </DocsBlock>
+              </div>
+            )
+          case "image":
+            return (
+              <DocsBlock key={i} module="image">
+                <img src={(block as any).imageSrc} alt="" />
+              </DocsBlock>
+            );
           case "docs_1":
             return(
               <DocsBlock key={i} module={module}>

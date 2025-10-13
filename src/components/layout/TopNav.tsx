@@ -9,18 +9,13 @@ export function TopNav() {
       <Nav>
       <LogoWrapper>
         <Image
-          src="/BSM_DEV_LOGO.svg"
-          alt="BSSM Developers"
-          width={394}
-          height={79}
+          src="/MainLogo.svg"
+          alt="TEXT-OVERFLOW"
+          width={200}
+          height={50}
           priority
         />
       </LogoWrapper>
-
-        <a href="#">API 둘러보기</a>
-        <a href="#">API 공유하기</a>
-        <a href="#">API 사용하기</a>
-        <a href="#">가이드</a>
       </Nav>
 
       <LoginButton>로그인</LoginButton>
@@ -34,7 +29,6 @@ const Header = styled.header`
   width: 100%;
   height: 69px;
   padding: 0 2rem;
-  border-bottom: 1px solid ${({ theme }) => theme.colors.grey[200]};
   background: ${({ theme }) => theme.colors.background};
 `;
 
@@ -53,13 +47,6 @@ const Nav = styled.nav`
   align-items: center;
   width:1447px;
   gap: 69px;
-
-  a {
-    font-size: 16px;
-    font-weight: 500;
-    color: ${({ theme }) => theme.colors.grey[400]};
-    text-decoration: none;
-  }
 `;
 
 const LoginButton = styled.button`

@@ -8,6 +8,8 @@ export interface CustomTheme {
     bssmBlue: string;
     bssmYellow: string;
     bssmGreen: string;
+    textoverflowPurple: string;
+
     grey: {
       100: string;
       200: string;
@@ -56,6 +58,7 @@ export const lightTheme: CustomTheme = {
     bssmBlue: "#006AB7",
     bssmYellow: "#F3A941",
     bssmGreen: "#00A9A4",
+    textoverflowPurple: "#3C00A4",
 
     grey: {
       100: "#F2F4F6",
@@ -101,6 +104,13 @@ export const lightTheme: CustomTheme = {
       fontFamily: `"Spoqa Han Sans Neo", sans-serif`,
       fontSize: "42px",
       fontWeight: "medium",
+      lineHeight: "130%",
+      letterSpacing: "-0.5px",
+    },
+    Headline_4: {
+      fontFamily: `"Spoqa Han Sans Neo", sans-serif`,
+      fontSize: "30px",
+      fontWeight: "bold",
       lineHeight: "130%",
       letterSpacing: "-0.5px",
     },
@@ -174,6 +184,13 @@ export const lightTheme: CustomTheme = {
       fontSize: "20px",
       fontWeight: "light",
       lineHeight: "160%",
+    },
+    Docs_3: {
+      fontFamily: `"Spoqa Han Sans Neo", sans-serif`,
+      fontSize: "14px",
+      fontWeight: "light",
+      lineHeight: "160%",
+      letterSpacing: "-0.5px",
     },
   },
   borderRadius: {

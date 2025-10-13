@@ -45,7 +45,7 @@ export const docsModules = {
   `,
   
   space: (theme: Theme) => css`
-    margin-bottom: 4px;
+    margin-bottom: 12px;
   `,
 
   big_space: (theme: Theme) => css`

@@ -4,13 +4,13 @@ import styled from "@emotion/styled";
 import { TopNav } from "./TopNav";
 import { DocsSidebar } from "./DocsSidebar";
 
-export function DocsLayout({ children }: { children: React.ReactNode }) {
+export function DocsLayout({ children, sidebar }: { children: React.ReactNode; sidebar?: React.ReactNode }) {
   return (
     <Wrapper>
       <TopNav />
       <Body>
         <Sidebar>
-          <DocsSidebar />
+          {sidebar ?? <DocsSidebar />}
         </Sidebar>
         <Content>{children}</Content>
       </Body>
