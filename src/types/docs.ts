@@ -1,9 +1,22 @@
+export type DocsModule =
+  | "headline_1"
+  | "headline_2"
+  | "docs_1"
+  | "list"
+  | "image"
+  | "code"
+  | "table"
+  | "space"
+  | "big_space";
+
 export interface DocsBlock {
-    module: string;
+    module: DocsModule;
     content?: string;
     listItems?: string[];
     imageSrc?: string;
     apiData?: ApiDoc;
+    tableHeaders?: string[];
+    tableRows?: string[][];
 }
   
 export interface ApiDoc {

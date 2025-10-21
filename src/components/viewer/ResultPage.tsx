@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DocsBlockRender } from "@/components/docs/DocsBlockRender";
+import { DocsEditorLayout } from "@/components/docs/DocsEditorLayout";
 import { SidebarItem } from "@/components/ui/sidebarItem/SidebarItem";
 import type { DocsBlock as DocsBlockType } from "@/types/docs";
 import { TopNav } from "@/components/layout/TopNav";
@@ -21,9 +22,13 @@ export function ResultPage() {
   if (!data) return null;
 
   // 헤더 중복 방지: 섹션 앞 big_space, 첫 headline_1 및 그 다음 space 제거
-  const start = data.sections[active]?.start ?? 0;
-  const end = data.sections[active]?.end ?? data.blocks.length;
-  const currentSlice = data.blocks.slice(start, end);
+  const hasSections = Array.isArray(data.sections) && data.sections.length > 0;
+  const start = hasSections ? (data.sections[active]?.start ?? 0) : 0;
+  const end = hasSections ? (data.sections[active]?.end ?? data.blocks.length) : data.blocks.length;
+  const currentSlice = (() => {
+    const sliced = data.blocks.slice(start, end);
+    return sliced.length > 0 ? sliced : data.blocks; // 비면 전체 문서로 폴백
+  })();
   
   // 이미지 경로 치환: sessionStorage에 저장된 files를 Blob URL로 매핑
   let fileMap: Record<string, string> = {};
@@ -74,12 +79,42 @@ export function ResultPage() {
             </div>
           ))}
         </nav>
-        <div style={{ display: "flex", flexDirection: "column", overflow: "hidden" }}>
+        <div style={{ display: "flex", flexDirection: "column", overflow: "hidden", minWidth: 0 }}>
           <div style={{ padding: "24px 24px 0 24px", flex: "0 0 auto" }}>
-            <DocsHeader title={data.sections[active]?.title ?? data.title} breadcrumb={["문서 뷰어"]} />
+            <DocsHeader title={data.sections[active]?.title ?? data.title} breadcrumb={[data.title]} />
           </div>
-          <div style={{ padding: "0 24px 24px 24px", overflowY: "auto", minHeight: 0 }}>
-            <DocsBlockRender blocks={withImages} />
+          <div style={{ padding: "0 24px 24px 24px", overflowY: "auto", minHeight: 0, minWidth: 0 }}>
+            <DocsEditorLayout
+              initialBlocks={(withImages.length > 0 ? withImages : data.blocks) as any}
+              containerStyle={{ padding: 0, maxWidth: "100%" }}
+              allowAdd={false}
+              onSave={async (edited) => {
+                // 현재 섹션 블록을 치환
+                const next = [...data.blocks];
+                if (hasSections) {
+                  next.splice(start, end - start, ...edited);
+                } else {
+                  // 섹션 정보가 없으면 전체 덮어쓰기
+                  next.splice(0, next.length, ...edited);
+                }
+                const updated = { ...data, blocks: next };
+                setData(updated);
+                sessionStorage.setItem("__render_blocks__", JSON.stringify(updated));
+
+                // 서버에도 반영 (slug를 sessionStorage에 저장한 케이스 가정)
+                try {
+                  const metaRaw = sessionStorage.getItem("__render_meta__");
+                  const slug = metaRaw ? JSON.parse(metaRaw)?.slug : undefined;
+                  if (slug) {
+                    await fetch(`/api/docs/${slug}`, {
+                      method: "PUT",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({ sections: updated.sections, blocks: updated.blocks }),
+                    });
+                  }
+                } catch {}
+              }}
+            />
           </div>
         </div>
       </div>

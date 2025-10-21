@@ -26,6 +26,24 @@ export const docsModules = {
     }
   `,
 
+  table: (theme: Theme) => css`
+    ${applyTypography(theme, "Docs_1")}
+    color: ${theme.colors.grey[700]};
+    width: 100%;
+    overflow-x: auto;
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      min-width: 480px;
+    }
+    th, td {
+      border: 1px solid ${theme.colors.grey[200]};
+      padding: 8px 10px;
+      text-align: left;
+    }
+    th { background: ${theme.colors.grey[100]}; color: ${theme.colors.grey[900]}; }
+  `,
+
   code: (theme: Theme) => css`
     background: ${theme.colors.grey[100]};
     font-family: monospace;

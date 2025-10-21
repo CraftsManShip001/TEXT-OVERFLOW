@@ -1,12 +1,15 @@
-import { getDocs } from "@/features/docs/api/getDocs";
 import { Tabs } from "@/components/ui/tabs/Tabs";
 import { DocCard } from "@/components/ui/card/DocCard";
 import { TopNav } from "@/components/layout/TopNav";
+import { headers } from "next/headers";
 
 export default async function Home({ searchParams }: { searchParams: Promise<{ tab?: string }> }) {
   const sp = await searchParams;
   const tab = sp?.tab === "latest" ? "latest" : "trending";
-  const docs = await getDocs({ sort: tab });
+  const h = await headers();
+  const base = `${h.get("x-forwarded-proto") ?? "http"}://${h.get("host")}`;
+  const res = await fetch(`${base}/api/docs`, { cache: "no-store" });
+  const { docs } = await res.json();
 
   return (
     <div style={{ backgroundColor: "white" }  }>
@@ -20,8 +23,10 @@ export default async function Home({ searchParams }: { searchParams: Promise<{ t
             gridTemplateColumns: "repeat(auto-fill, minmax(260px, 1fr))",
           }}
         >
-          {docs.map((d) => (
-            <DocCard key={d.id} doc={d} />
+          {docs?.map((d: any) => (
+            <a key={d.id} href={`/docs/${d.slug}`}>
+              <DocCard doc={{ id: d.id, title: d.title, author: d.profiles?.username, description: "", cover: d.cover_url }} />
+            </a>
           ))}
         </section>
       </div>

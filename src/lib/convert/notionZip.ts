@@ -7,6 +7,7 @@ export interface NotionZipParseResult {
   blocks: DocsBlock[];
   files: Record<string, Uint8Array>; 
   sections: { title: string; anchor: string; start: number; end: number }[];
+  toc?: { label: string; anchor?: string; children?: { label: string; anchor?: string }[] }[];
 }
 
 export interface ConvertOptions {
@@ -21,7 +22,6 @@ export async function convertNotionZipToBlocks(
   const buffer = input instanceof Blob ? await input.arrayBuffer() : input;
   const rootZip = await JSZip.loadAsync(buffer);
 
-  // helper: pick a zip that actually contains markdown files; supports one level nesting
   async function findZipWithMarkdown(z: JSZip): Promise<{ zip: JSZip; mdPaths: string[] }> {
     const allPaths = Object.keys(z.files);
     const filePaths = allPaths.filter((p) => !z.files[p].dir);
@@ -36,7 +36,6 @@ export async function convertNotionZipToBlocks(
         const found = await findZipWithMarkdown(nested);
         if (found.mdPaths.length > 0) return found;
       } catch {
-        // ignore and continue
       }
     }
     return { zip: z, mdPaths: [] };
@@ -84,10 +83,11 @@ export async function convertNotionZipToBlocks(
   const sanitize = (name: string) => {
     let n = name;
     try { n = decodeURIComponent(n); } catch {}
-    // drop trailing hex/hash ids from Notion export filenames
     n = n.replace(/\s[0-9a-f]{8,}$/i, "");
     return n.trim();
   };
+
+  const pathMeta: { path: string; label: string; anchor: string }[] = [];
 
   if (mode === "single") {
     const mdText = await zip.file(sorted[0])!.async("string");
@@ -99,7 +99,9 @@ export async function convertNotionZipToBlocks(
       else part = part.slice(1);
     }
     if (part.length > 0) {
-      sections.push({ title, anchor: slug(title), start: 0, end: part.length });
+      const anc = slug(title);
+      sections.push({ title, anchor: anc, start: 0, end: part.length });
+      pathMeta.push({ path: sorted[0], label: title, anchor: anc });
       blocks = part;
     } else {
       blocks = [];
@@ -129,7 +131,9 @@ export async function convertNotionZipToBlocks(
       blocks.push(...part);
       const end = blocks.length;
       if (i === 0 && sectionTitle) title = sectionTitle;
-      sections.push({ title: sectionTitle, anchor: slug(sectionTitle), start, end });
+      const anc = slug(sectionTitle);
+      sections.push({ title: sectionTitle, anchor: anc, start, end });
+      pathMeta.push({ path, label: sectionTitle, anchor: anc });
     }
   }
 
@@ -143,7 +147,21 @@ export async function convertNotionZipToBlocks(
     })
   );
 
-  return { title, blocks, files, sections };
+  const tocMap = new Map<string, { label: string; anchor?: string; children?: { label: string; anchor?: string }[] }>();
+  for (const m of pathMeta) {
+    const seg0 = m.path.split("/")[0];
+    if (!seg0 || /^(assets?|_)/i.test(seg0)) {
+      tocMap.set(m.label, { label: m.label, anchor: m.anchor });
+      continue;
+    }
+    const group = tocMap.get(seg0) ?? { label: seg0, children: [] };
+    group.children = group.children ?? [];
+    group.children.push({ label: m.label, anchor: m.anchor });
+    tocMap.set(seg0, group);
+  }
+  const toc = Array.from(tocMap.values());
+
+  return { title, blocks, files, sections, toc };
 }
 
 

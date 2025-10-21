@@ -13,26 +13,24 @@ export function convertMarkdown(content: string): DocsBlock[] {
     }
   };
 
-  for (const line of lines) {
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
     const trimmed = line.trim();
+    const normalized = trimmed.replace(/^[-*]\s+/, "").replace(/^>\s+/, "");
 
-    // image (markdown): ![alt](path)
-    if (/^!\[[^\]]*\]\([^\)]+\)\s*$/.test(trimmed)) {
+    const mdImg = normalized.match(/!\[[^\]]*\]\(([^)]+)\)/);
+    if (mdImg) {
       flushList();
-      const match = trimmed.match(/^!\[[^\]]*\]\(([^\)]+)\)/);
-      const src = match?.[1];
-      if (src) {
-        blocks.push({ module: "image", imageSrc: src });
-      }
+      const raw = mdImg[1].trim();
+      const src = raw.replace(/^<|>$/g, "");
+      blocks.push({ module: "image", imageSrc: src });
       continue;
     }
 
-    // image (html): <img src="...">
-    if (/^<img\s+[^>]*src=["'][^"']+["'][^>]*>\s*$/i.test(trimmed)) {
+    const htmlImg = normalized.match(/<img[^>]*src=["']([^"']+)["'][^>]*>/i);
+    if (htmlImg) {
       flushList();
-      const m = trimmed.match(/src=["']([^"']+)["']/i);
-      const src = m?.[1];
-      if (src) blocks.push({ module: "image", imageSrc: src });
+      blocks.push({ module: "image", imageSrc: htmlImg[1] });
       continue;
     }
 
@@ -58,6 +56,33 @@ export function convertMarkdown(content: string): DocsBlock[] {
       flushList();
       blocks.push({ module: "headline_2", content: trimmed.replace(/^#{3,4}\s*/, "").trim() });
       continue;
+    }
+
+    if (/^\|.*\|$/.test(trimmed)) {
+      const tableLines: string[] = [];
+      let j = i;
+      while (j < lines.length) {
+        const l = lines[j].trim();
+        if (/^\|.*\|$/.test(l)) {
+          tableLines.push(l);
+          j++;
+        } else {
+          break;
+        }
+      }
+      if (tableLines.length >= 2) {
+        const header = tableLines[0]
+          .slice(1, -1)
+          .split("|")
+          .map((s) => s.trim());
+        const rest = tableLines.slice(1);
+        const bodyLines = rest.filter((l) => !/^\|?\s*:?[-]+:?\s*(\|\s*:?[-]+:?\s*)+\|?$/.test(l));
+        const rows = bodyLines.map((r) => r.slice(1, -1).split("|").map((s) => s.trim()));
+        flushList();
+        blocks.push({ module: "table", tableHeaders: header, tableRows: rows } as any);
+        i = j - 1;
+        continue;
+      }
     }
 
     if (/^[-*]\s+/.test(trimmed)) {

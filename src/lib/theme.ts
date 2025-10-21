@@ -89,13 +89,13 @@ export const lightTheme: CustomTheme = {
     Headline_1: {
       fontFamily: `"Spoqa Han Sans Neo", sans-serif`,
       fontWeight: "bold",
-      fontSize: "42px",
+      fontSize: "36px",
       lineHeight: "120%",
       letterSpacing: "-0.5px",
     },
     Headline_2: {
       fontFamily: `"Spoqa Han Sans Neo", sans-serif`,
-      fontSize: "30px",
+      fontSize: "28px",
       fontWeight: "medium",
       lineHeight: "130%",
       letterSpacing: "-0.5px",

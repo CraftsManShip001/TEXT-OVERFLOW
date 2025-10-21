@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import styled from "@emotion/styled";
 import { sidebarModules } from "./modules";
 import { ChevronDown, ChevronRight } from "lucide-react";
