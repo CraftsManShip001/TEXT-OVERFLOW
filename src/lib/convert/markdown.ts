@@ -79,7 +79,7 @@ export function convertMarkdown(content: string): DocsBlock[] {
         const bodyLines = rest.filter((l) => !/^\|?\s*:?[-]+:?\s*(\|\s*:?[-]+:?\s*)+\|?$/.test(l));
         const rows = bodyLines.map((r) => r.slice(1, -1).split("|").map((s) => s.trim()));
         flushList();
-        blocks.push({ module: "table", tableHeaders: header, tableRows: rows } as any);
+        blocks.push({ module: "table", tableHeaders: header, tableRows: rows } as unknown as DocsBlock);
         i = j - 1;
         continue;
       }
