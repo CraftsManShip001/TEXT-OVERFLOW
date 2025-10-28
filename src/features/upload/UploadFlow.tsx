@@ -338,6 +338,30 @@ export function UploadFlow() {
     }
   };
 
+  // 사이드바로 이동하기 전에 현재 섹션 변경 내용을 원본 blocks/sections에 반영
+  const persistCurrentEdit = () => {
+    if (step !== "edit") return;
+    if (!sections.length) return;
+    const pure = editBlocks.map(({ id, ...rest }) => rest) as DocsBlockType[];
+    const sec: any = sections[activeIdx];
+    const start = (sec?.start ?? 0) as number;
+    const end = (sec?.end ?? blocks.length) as number;
+    const delta = pure.length - (end - start);
+    setBlocks((prev) => {
+      const copy = [...prev];
+      copy.splice(start, end - start, ...pure);
+      return copy as any;
+    });
+    setSections((prev: any) => {
+      const next = prev.map((s: any, idx: number) => {
+        if (idx < activeIdx) return s;
+        if (idx === activeIdx) return { ...s, end: s.end + delta };
+        return { ...s, start: s.start + delta, end: s.end + delta };
+      });
+      return next;
+    });
+  };
+
   const finalizeUpload = async () => {
     try {
       setRendering(true);
@@ -442,7 +466,15 @@ export function UploadFlow() {
               <Sidebar>
                 <nav style={{ padding: "24px 16px" }}>
                   {sections.map((sec, i) => (
-                    <div key={i} style={{ marginBottom: 6 }} onClick={() => setActiveIdx(i)}>
+                    <div
+                      key={i}
+                      style={{ marginBottom: 6 }}
+                      onClick={() => {
+                        if (i === activeIdx) return;
+                        persistCurrentEdit();
+                        setActiveIdx(i);
+                      }}
+                    >
                       <SidebarItem label={sec.title} module="default" active={i === activeIdx} />
                     </div>
                   ))}

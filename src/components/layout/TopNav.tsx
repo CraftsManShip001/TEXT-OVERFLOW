@@ -3,10 +3,12 @@
 import styled from "@emotion/styled";
 import Image from "next/image";
 import { useSession, signIn, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export function TopNav() {
   const { data } = useSession();
   const user = data?.user;
+  const router = useRouter();
 
   const onLogin = () => signIn("google", { callbackUrl: "/" });
   const onLogout = () => signOut();
@@ -14,7 +16,7 @@ export function TopNav() {
   return (
     <Header>
       <Nav>
-        <LogoWrapper onClick={() => (window.location.href = "/") }>
+        <LogoWrapper onClick={() => router.push("/") }>
           <Image
             src="/MainLogo.svg"
             alt="TEXT-OVERFLOW"
